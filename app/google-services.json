@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "726801245105",
+    "project_id": "filter-generator-b5e89",
+    "storage_bucket": "filter-generator-b5e89.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726801245105:android:143ebc802cf0bc9bfdd390",
+        "android_client_info": {
+          "package_name": "com.nipusan.app.filtergenerator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "726801245105-s6lqli9luvtp48f816l6oo4vucpnlma5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoEQnjb4o0xuWNOaGOlSZVAsJVRVieME4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "726801245105-s6lqli9luvtp48f816l6oo4vucpnlma5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
