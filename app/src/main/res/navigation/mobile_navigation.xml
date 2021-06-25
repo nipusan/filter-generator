@@ -18,8 +18,8 @@
         tools:layout="@layout/fragment_gallery" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
+        android:id="@+id/nav_blocks"
         android:name="com.nipusan.app.filtergenerator.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
+        android:label="@string/menu_blocks"
         tools:layout="@layout/fragment_slideshow" />
 </navigation>
