@@ -13,13 +13,13 @@
 
     <fragment
         android:id="@+id/nav_collections"
-        android:name="com.nipusan.app.filtergenerator.ui.gallery.GalleryFragment"
+        android:name="com.nipusan.app.filtergenerator.ui.collection.CollectionFragment"
         android:label="@string/menu_collections"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_Collection" />
 
     <fragment
         android:id="@+id/nav_blocks"
-        android:name="com.nipusan.app.filtergenerator.ui.slideshow.SlideshowFragment"
+        android:name="com.nipusan.app.filtergenerator.ui.block.BlocksFragment"
         android:label="@string/menu_blocks"
-        tools:layout="@layout/fragment_slideshow" />
+        tools:layout="@layout/fragment_block" />
 </navigation>

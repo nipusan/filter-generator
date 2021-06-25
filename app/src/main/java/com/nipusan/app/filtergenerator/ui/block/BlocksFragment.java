@@ -1,4 +1,4 @@
-package com.nipusan.app.filtergenerator.ui.slideshow;
+package com.nipusan.app.filtergenerator.ui.block;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,24 +12,23 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.nipusan.app.filtergenerator.R;
-import com.nipusan.app.filtergenerator.databinding.FragmentSlideshowBinding;
+import com.nipusan.app.filtergenerator.databinding.FragmentBlockBinding;
 
-public class SlideshowFragment extends Fragment {
+public class BlocksFragment extends Fragment {
 
-    private SlideshowViewModel slideshowViewModel;
-    private FragmentSlideshowBinding binding;
+    private BlocksViewModel blocksViewModel;
+    private FragmentBlockBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        slideshowViewModel =
-                new ViewModelProvider(this).get(SlideshowViewModel.class);
+        blocksViewModel =
+                new ViewModelProvider(this).get(BlocksViewModel.class);
 
-        binding = FragmentSlideshowBinding.inflate(inflater, container, false);
+        binding = FragmentBlockBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         final TextView textView = binding.textSlideshow;
-        slideshowViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        blocksViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
