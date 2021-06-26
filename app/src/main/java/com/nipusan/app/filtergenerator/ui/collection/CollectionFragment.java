@@ -16,12 +16,15 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.nipusan.app.filtergenerator.R;
 import com.nipusan.app.filtergenerator.databinding.FragmentCollectionBinding;
+import com.nipusan.app.filtergenerator.databinding.FragmentFormCollectionBinding;
 
 public class CollectionFragment extends Fragment {
 
     private CollectionViewModel collectionViewModel;
     private FragmentCollectionBinding binding;
+    private FragmentFormCollectionBinding formCollectionBinding;
 
     private FloatingActionButton btnAddCollection;
     private RecyclerView rvCollections;
@@ -32,10 +35,12 @@ public class CollectionFragment extends Fragment {
                 new ViewModelProvider(this).get(CollectionViewModel.class);
 
         binding = FragmentCollectionBinding.inflate(inflater, container, false);
+        formCollectionBinding = FragmentFormCollectionBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         btnAddCollection = binding.btnAddCollection;
         rvCollections = binding.rvCollections;
+
 
         btnAddCollection.setOnClickListener(new View.OnClickListener() {
             /**
@@ -45,7 +50,16 @@ public class CollectionFragment extends Fragment {
              */
             @Override
             public void onClick(View v) {
-                //startActivity(new Intent(getContext(), CollectionActivity.class));
+                try {
+                    FormCollectionFragment nextFragment = new FormCollectionFragment();
+                    getActivity().getSupportFragmentManager().beginTransaction().
+                            replace(R.id.nav_host_fragment_content_main, nextFragment, "Add Collection")
+                            .addToBackStack(null)
+                            .commit();
+
+                } catch (Exception e) {
+                    Log.e("Exception", e.getMessage());
+                }
                 Log.i("CollectionFragment", "start onClick!");
             }
         });
