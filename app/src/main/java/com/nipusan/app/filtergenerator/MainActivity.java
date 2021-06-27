@@ -1,10 +1,14 @@
 package com.nipusan.app.filtergenerator;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +34,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.nipusan.app.filtergenerator.databinding.ActivityMainBinding;
+import com.nipusan.app.filtergenerator.utils.Constants;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -39,7 +44,7 @@ import java.util.List;
 /**
  *
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Constants {
 
 
     private static final String TAG_FIREBASE = "FIREBASE";
@@ -49,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView email;
     private ImageView imageProfile;
     private FirebaseFirestore db;
-
+    private SharedPreferences preferences;
 
     FirebaseAuth fAuth;
     FirebaseAuth.AuthStateListener listener;
@@ -92,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         email = (TextView) hView.findViewById(R.id.tvEmailUser);
         imageProfile = (ImageView) hView.findViewById(R.id.ivProfileUser);
 
+        preferences = getApplicationContext().getSharedPreferences("MyPref", MODE_PRIVATE);
 
         fAuth = FirebaseAuth.getInstance();
 
@@ -109,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
                         email.setText(user.getEmail());
                         Log.i("url", user.getPhotoUrl().toString());
                         Glide.with(getApplicationContext()).load(user.getPhotoUrl().toString()).into(imageProfile);
+                        preferences.edit().putString(USER_UID, user.getUid()).apply();
                         findCollection(user.getUid());
                     } catch (Exception e) {
                         Log.println(Log.ERROR, "Exception", e.getMessage());
@@ -150,6 +157,8 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+
+
     @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -189,6 +198,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull @NotNull Task<Void> task) {
                 Toast.makeText(MainActivity.this, "The session has been closed!", Toast.LENGTH_LONG).show();
+                startActivity(new Intent(MainActivity.this, MainActivity.class));
+                finish();
             }
         });
     }

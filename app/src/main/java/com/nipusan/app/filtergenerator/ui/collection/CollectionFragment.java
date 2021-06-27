@@ -1,6 +1,8 @@
 package com.nipusan.app.filtergenerator.ui.collection;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,14 +15,30 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.nipusan.app.filtergenerator.FormCollectionsActivity;
+import com.nipusan.app.filtergenerator.MainActivity;
 import com.nipusan.app.filtergenerator.R;
+import com.nipusan.app.filtergenerator.adapter.CollectionAdapter;
 import com.nipusan.app.filtergenerator.databinding.FragmentCollectionBinding;
 import com.nipusan.app.filtergenerator.databinding.FragmentFormCollectionBinding;
+import com.nipusan.app.filtergenerator.entity.CollectionEntity;
+import com.nipusan.app.filtergenerator.utils.Constants;
 
-public class CollectionFragment extends Fragment {
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+
+public class CollectionFragment extends Fragment implements Constants {
 
     private CollectionViewModel collectionViewModel;
     private FragmentCollectionBinding binding;
@@ -28,6 +46,11 @@ public class CollectionFragment extends Fragment {
 
     private FloatingActionButton btnAddCollection;
     private RecyclerView rvCollections;
+    private SharedPreferences preferences;
+
+    CollectionAdapter collectionAdapter;
+    DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+    ArrayList<CollectionEntity> listCollection;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -39,8 +62,12 @@ public class CollectionFragment extends Fragment {
         View root = binding.getRoot();
 
         btnAddCollection = binding.btnAddCollection;
-        rvCollections = binding.rvCollections;
 
+        try {
+            preferences = getContext().getSharedPreferences("MyPref", Context.MODE_PRIVATE);
+        } catch (Exception e) {
+            Log.e(TAG_EXCEPTION, e.getMessage());
+        }
 
         btnAddCollection.setOnClickListener(new View.OnClickListener() {
             /**
@@ -51,11 +78,8 @@ public class CollectionFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 try {
-                    FormCollectionFragment nextFragment = new FormCollectionFragment();
-                    getActivity().getSupportFragmentManager().beginTransaction().
-                            replace(R.id.nav_host_fragment_content_main, nextFragment, "Add Collection")
-                            .addToBackStack(null)
-                            .commit();
+
+                    startActivity(new Intent(getContext(), FormCollectionsActivity.class));
 
                 } catch (Exception e) {
                     Log.e("Exception", e.getMessage());
@@ -64,14 +88,45 @@ public class CollectionFragment extends Fragment {
             }
         });
 
-        collectionViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                //textView.setText(s);
-            }
-        });
+        rvCollections = binding.rvCollections;
+        rvCollections.setAdapter(new CollectionAdapter(new ArrayList<>(), getActivity()));
+
+        RecyclerView.LayoutManager mLayout = new LinearLayoutManager(getActivity());
+
+        rvCollections.setLayoutManager(mLayout);
+        rvCollections.setItemAnimator(new DefaultItemAnimator());
+
+        loadData();
+
         return root;
     }
+
+    private void loadData() {
+        String userUid = preferences.getString(USER_UID, "");
+        database.child(ENTITY_COLLECTION)
+                .orderByChild(COLLECTION_FIELD_OWNER)
+                .equalTo(userUid)
+                .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                listCollection = new ArrayList<>();
+                for (DataSnapshot item : snapshot.getChildren()){
+                    CollectionEntity entity = item.getValue(CollectionEntity.class);
+                    entity.setKey(item.getKey());
+                    listCollection.add(entity);
+                }
+                collectionAdapter = new CollectionAdapter(listCollection, getActivity());
+                rvCollections.setAdapter(collectionAdapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+            }
+        });
+    }
+
+
 
     @Override
     public void onDestroyView() {

@@ -9,6 +9,7 @@
 
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/cardCollection"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:layout_marginLeft="10dp"
@@ -29,6 +30,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/cardNameCollection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Collection 1"
@@ -39,6 +41,7 @@
                     android:textSize="15dp"/>
 
                 <TextView
+                    android:id="@+id/cardDescCollection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="description"
@@ -51,7 +54,7 @@
             </LinearLayout>
 
             <ImageView
-                android:id="@+id/hapus"
+                android:id="@+id/btnDeleteCollection"
                 android:layout_width="35dp"
                 android:layout_height="35dp"
                 android:src="@drawable/ic_baseline_delete_24"

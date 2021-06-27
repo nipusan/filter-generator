@@ -69,27 +69,6 @@ public class FormCollectionFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         binding = FragmentFormCollectionBinding.inflate(inflater, container, false);
-
-        btnBackCollection = binding.btnBackCollection;
-
-        btnBackCollection.setOnClickListener(new View.OnClickListener(){
-
-            /**
-             * Called when a view has been clicked.
-             *
-             * @param v The view that was clicked.
-             */
-            @Override
-            public void onClick(View v) {
-                try {
-
-                    getActivity().getSupportFragmentManager().popBackStack();
-                } catch (Exception e) {
-                    Log.e("Exception", e.getMessage());
-                }
-                Log.d("FormCollectionFragment", "start onClick - btnBackCollection!");
-            }
-        });
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_form_collection, container, false);
     }
