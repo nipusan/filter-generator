@@ -1,14 +1,19 @@
 package com.nipusan.app.filtergenerator.ui.collection;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +24,8 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -78,8 +85,70 @@ public class CollectionFragment extends Fragment implements Constants {
             @Override
             public void onClick(View v) {
                 try {
+                    
+                    TextView tname, tdesc;
+                    Button btnAction;
+                    LayoutInflater inflater = LayoutInflater.from(getActivity());
+                    final View view = inflater.inflate(R.layout.activity_form_collections, null);
 
-                    startActivity(new Intent(getContext(), FormCollectionsActivity.class));
+                    AlertDialog.Builder form = new AlertDialog.Builder(getActivity());
+                    form.setTitle("Saved");
+                    form.setMessage("Saved Collection");
+
+                    tname = view.findViewById(R.id.etName);
+                    tdesc = view.findViewById(R.id.etDesc);
+                    btnAction = view.findViewById(R.id.btnSave);
+                    btnAction.setVisibility(View.GONE);
+
+                    form.setView(view);
+
+
+                    form.setPositiveButton("Saved", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int i) {
+
+                            dialog.dismiss();
+                            String name = tname.getText().toString();
+                            String desc = tdesc.getText().toString();
+                            String userUid = preferences.getString(USER_UID, "");
+
+                            if (TextUtils.isEmpty(name)) {
+                                Toast.makeText(getActivity(), "Name is Empty!", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+
+                            if (TextUtils.isEmpty(desc)) {
+                                Toast.makeText(getActivity(), "Description is Empty!", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+
+                            database.child(ENTITY_COLLECTION)
+                                    .push()
+                                    .setValue(new CollectionEntity(name, desc, userUid))
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void unused) {
+                                            Toast.makeText(view.getContext(), "Saved Collection!", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull @NotNull Exception e) {
+                                    Toast.makeText(view.getContext(), "Collection could not be saved!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                        }
+                    });
+
+                    form.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+
+                    AlertDialog build = form.create();
+                    build.show();
 
                 } catch (Exception e) {
                     Log.e("Exception", e.getMessage());
