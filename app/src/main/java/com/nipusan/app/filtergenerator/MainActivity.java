@@ -1,5 +1,6 @@
 package com.nipusan.app.filtergenerator;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -187,6 +188,14 @@ public class MainActivity extends AppCompatActivity implements Constants {
         super.onResume();
         fAuth.addAuthStateListener(listener);
         Log.println(Log.DEBUG, "onResume", "start method");
+
+        try {
+            preferences = getApplicationContext().getSharedPreferences("MyPref", Context.MODE_PRIVATE);
+            String collectionActive = preferences.getString(COLLECTION_UID, "");
+            Log.println(Log.INFO, TAG_FIREBASE, "collectionActive:" + collectionActive);
+        } catch (Exception e) {
+            Log.e(TAG_EXCEPTION, e.getMessage());
+        }
     }
 
     public void logout(MenuItem item) {

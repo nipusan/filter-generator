@@ -11,6 +11,8 @@ public interface Constants {
     final static String FIELD_FIELD_ID_BLOCK = "idBlock";
 
     final static String USER_UID = "Uid";
+    final static String COLLECTION_UID = "Cid";
+    final static String COLLECTION_NAME = "name";
 
 
     final static String OPERATION_ADD = "add";

@@ -2,8 +2,11 @@ package com.nipusan.app.filtergenerator.adapter;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +39,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
 
     private List<CollectionEntity> cList;
     private Activity activity;
+    private SharedPreferences preferences;
 
     DatabaseReference database = FirebaseDatabase.getInstance().getReference();
 
@@ -183,6 +187,19 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
                 build.show();
 
                 return true;
+            }
+        });
+
+        holder.cardCollection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    preferences = activity.getSharedPreferences("MyPref", Context.MODE_PRIVATE);
+                    preferences.edit().putString(COLLECTION_UID, entity.getKey()).apply();
+                    preferences.edit().putString(COLLECTION_NAME, entity.getName()).apply();
+                } catch (Exception e) {
+                    Log.e(TAG_EXCEPTION, e.getMessage());
+                }
             }
         });
 
