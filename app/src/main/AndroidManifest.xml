@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FilterGenerator">
-        <activity android:name=".FormCollectionsActivity"></activity>
+        <activity android:name=".FormBlockActivity"></activity>
+        <activity android:name=".FormCollectionsActivity" />
         <activity android:name=".LoginActivity" />
         <activity
             android:name=".MainActivity"

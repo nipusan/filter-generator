@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,21 +24,21 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nipusan.app.filtergenerator.R;
-import com.nipusan.app.filtergenerator.entity.CollectionEntity;
+import com.nipusan.app.filtergenerator.entity.BlockEntity;
 import com.nipusan.app.filtergenerator.utils.Constants;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.MyViewHolder> implements Constants {
+public class BlockAdapter extends RecyclerView.Adapter<BlockAdapter.MyViewHolder> implements Constants {
 
-    private List<CollectionEntity> cList;
+    private List<BlockEntity> cList;
     private Activity activity;
 
     DatabaseReference database = FirebaseDatabase.getInstance().getReference();
 
-    public CollectionAdapter(List<CollectionEntity> cList, Activity activity) {
+    public BlockAdapter(List<BlockEntity> cList, Activity activity) {
         this.cList = cList;
         this.activity = activity;
     }
@@ -45,15 +48,27 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.layout_item, parent, false);
+        View view = inflater.inflate(R.layout.layout_block_item, parent, false);
         return new MyViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull MyViewHolder holder, int position) {
-        final CollectionEntity entity = cList.get(position);
+        final BlockEntity entity = cList.get(position);
         holder.tvName.setText(entity.getName());
         holder.tvDescription.setText(entity.getDescription());
+        String type = "Not Found";
+        try {
+            type = ARRAY_LIST_BLOCK_TYPE[entity.getType()];
+        } catch (Exception e){
+            Log.println(Log.ERROR, TAG_EXCEPTION, e.getMessage());
+        }
+        holder.tvTypeBlock.setText(type);
+        if (!entity.getOverallProject().isEmpty() && entity.getOverallProject().equalsIgnoreCase("1")) {
+            holder.global.setVisibility(View.VISIBLE);
+        } else {
+            holder.global.setVisibility(View.GONE);
+        }
         holder.btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,7 +76,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
-                        database.child(ENTITY_COLLECTION).child(entity.getKey()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        database.child(ENTITY_BLOCK).child(entity.getKey()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void unused) {
                                 Toast.makeText(activity, "Deleted collection!", Toast.LENGTH_SHORT).show();
@@ -69,7 +84,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull @NotNull Exception e) {
-                                Toast.makeText(activity, "Collection could not be deleted!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(activity, "Block could not be deleted!", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -83,25 +98,39 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
             }
         });
 
-        holder.cardCollection.setOnLongClickListener(new View.OnLongClickListener() {
+        holder.cardBlock.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
 
                 TextView tname, tdesc;
+                AutoCompleteTextView stype, scollection;
+                CheckBox global;
                 Button btnAction;
                 LayoutInflater inflater = LayoutInflater.from(activity);
-                final View view = inflater.inflate(R.layout.activity_form_collections, null);
+                final View view = inflater.inflate(R.layout.activity_form_block, null);
 
                 AlertDialog.Builder form = new AlertDialog.Builder(activity);
                 form.setTitle("Update");
-                form.setMessage("Update data");
+                form.setMessage("The type, collection and global block fields cannot be edited after being created");
 
+                stype = view.findViewById(R.id.actType);
+                scollection = view.findViewById(R.id.actCollection);
                 tname = view.findViewById(R.id.etName);
                 tdesc = view.findViewById(R.id.etDesc);
+                global = view.findViewById(R.id.cbGlobalBlock);
+
                 btnAction = view.findViewById(R.id.btnSave);
                 tname.setText(entity.getName());
                 tdesc.setText(entity.getDescription());
-                btnAction.setVisibility(View.GONE);
+
+                /**
+                 * TODO: these fields will not be editable for now
+                 */
+                btnAction.setVisibility(View.INVISIBLE);
+                global.setVisibility(View.INVISIBLE);
+                stype.setVisibility(View.INVISIBLE);
+                scollection.setVisibility(View.INVISIBLE);
+
 
                 form.setView(view);
 
@@ -124,18 +153,18 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
                             return;
                         }
 
-                        database.child(ENTITY_COLLECTION)
+                        database.child(ENTITY_BLOCK)
                                 .child(entity.getKey())
-                                .setValue(new CollectionEntity(name, desc, entity.getOwner()))
+                                .setValue(new BlockEntity(entity.getType(), entity.getOverallProject(), name, desc, entity.getIdProject(), entity.getOwner()))
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void unused) {
-                                        Toast.makeText(view.getContext(), "Updated Collection!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(view.getContext(), "Updated Block!", Toast.LENGTH_SHORT).show();
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull @NotNull Exception e) {
-                                Toast.makeText(view.getContext(), "Collection could not be updated!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(view.getContext(), "Block could not be updated!", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -164,17 +193,26 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvDescription;
-        CardView cardCollection;
+        TextView tvName, tvDescription, tvTypeBlock;
+        //Spinner stype, scollection;
+        ImageView global;
+
+        CardView cardBlock;
         ImageView btnDelete;
 
 
         public MyViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
-            tvName = itemView.findViewById(R.id.cardNameCollection);
-            tvDescription = itemView.findViewById(R.id.cardDescCollection);
-            cardCollection = itemView.findViewById(R.id.cardCollection);
-            btnDelete = itemView.findViewById(R.id.btnDeleteCollection);
+            tvName = itemView.findViewById(R.id.cardNameBlock);
+            tvDescription = itemView.findViewById(R.id.cardDescBlock);
+            tvTypeBlock = itemView.findViewById(R.id.cardTypeBlock);
+            global = itemView.findViewById(R.id.isGlobal);
+
+            //stype = itemView.findViewById(R.id.spBlockType);
+            //stype = itemView.findViewById(R.id.spCollection);
+
+            cardBlock = itemView.findViewById(R.id.cardBlock);
+            btnDelete = itemView.findViewById(R.id.btnDeleteBlock);
         }
     }
 }
