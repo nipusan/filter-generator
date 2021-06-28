@@ -22,4 +22,10 @@
         android:name="com.nipusan.app.filtergenerator.ui.block.BlocksFragment"
         android:label="@string/menu_blocks"
         tools:layout="@layout/fragment_block" />
+
+    <fragment
+        android:id="@+id/nav_fields"
+        android:name="com.nipusan.app.filtergenerator.ui.field.FieldFragment"
+        android:label="@string/menu_fields"
+        tools:layout="@layout/fragment_field" />
 </navigation>

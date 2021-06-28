@@ -1,4 +1,4 @@
-package com.nipusan.app.filtergenerator.ui.block;
+package com.nipusan.app.filtergenerator.ui.field;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -14,7 +14,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,10 +32,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.nipusan.app.filtergenerator.R;
-import com.nipusan.app.filtergenerator.adapter.BlockAdapter;
-import com.nipusan.app.filtergenerator.databinding.FragmentBlockBinding;
+import com.nipusan.app.filtergenerator.adapter.FieldAdapter;
+import com.nipusan.app.filtergenerator.databinding.FragmentFieldBinding;
 import com.nipusan.app.filtergenerator.entity.BlockEntity;
-import com.nipusan.app.filtergenerator.entity.CollectionEntity;
+import com.nipusan.app.filtergenerator.entity.FieldEntity;
 import com.nipusan.app.filtergenerator.utils.Constants;
 
 import org.jetbrains.annotations.NotNull;
@@ -45,35 +44,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * logic for the crud of the collection entity
+ * logic for the crud of the Field entity
  *
  * @author nipusan
  * @version 0.0.1
  * @apiNote Fragment
  */
-public class BlocksFragment extends Fragment implements Constants {
+public class FieldFragment extends Fragment implements Constants {
 
-    private FragmentBlockBinding binding;
-    private FloatingActionButton btnAddBlock;
-    private RecyclerView rvBlocks;
+    private FragmentFieldBinding binding;
+    private FloatingActionButton btnAddField;
+    private RecyclerView rvFields;
     private SharedPreferences preferences;
 
-    BlockAdapter adapter;
+    FieldAdapter adapter;
     DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-    ArrayList<BlockEntity> listBlock;
-    List<CollectionEntity> listCollection;
-    ArrayList<String> collectionsName;
+    ArrayList<FieldEntity> listField;
+    List<BlockEntity> listBlock;
+    ArrayList<String> blocksName;
 
-    Integer blockTypy = null;
-    String collection = null;
+    Integer fieldTypy = null;
+    String block = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        binding = FragmentBlockBinding.inflate(inflater, container, false);
+        binding = FragmentFieldBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        btnAddBlock = binding.btnAddBlock;
+        btnAddField = binding.btnAddField;
 
         try {
             preferences = getContext().getSharedPreferences("MyPref", Context.MODE_PRIVATE);
@@ -81,7 +80,7 @@ public class BlocksFragment extends Fragment implements Constants {
             Log.e(TAG_EXCEPTION, e.getMessage());
         }
 
-        btnAddBlock.setOnClickListener(new View.OnClickListener() {
+        btnAddField.setOnClickListener(new View.OnClickListener() {
             /**
              * Called when a view has been clicked.
              *
@@ -91,46 +90,45 @@ public class BlocksFragment extends Fragment implements Constants {
             public void onClick(View v) {
                 try {
 
-                    TextView tname, tdesc;
-                    CheckBox isGlobal;
-                    AutoCompleteTextView actType, actCollection;
+                    TextView tname, tdesc, tvalue;
+                    AutoCompleteTextView actType, actBlock;
 
-                    String[] blockType = getResources().getStringArray(R.array.bock_type);
-                    ArrayAdapter<String> adapterBlockType = new ArrayAdapter<String>(
+                    String[] fieldType = getResources().getStringArray(R.array.bock_type);
+                    ArrayAdapter<String> adapterFieldType = new ArrayAdapter<String>(
                             getContext(),
-                            R.layout.block_list,
-                            blockType
+                            R.layout.field_list,
+                            fieldType
                     );
 
                     Button btnAction;
                     LayoutInflater inflater = LayoutInflater.from(getActivity());
-                    final View view = inflater.inflate(R.layout.activity_form_block, null);
+                    final View view = inflater.inflate(R.layout.activity_form_field, null);
 
                     AlertDialog.Builder form = new AlertDialog.Builder(getActivity());
                     form.setTitle("Saved");
-                    form.setMessage("Saved Block");
+                    form.setMessage("Saved Field");
 
                     tname = view.findViewById(R.id.etName);
                     tdesc = view.findViewById(R.id.etDesc);
-                    isGlobal = view.findViewById(R.id.cbGlobalBlock);
+                    tvalue = view.findViewById(R.id.etValue);
                     btnAction = view.findViewById(R.id.btnSave);
                     btnAction.setVisibility(View.GONE);
 
                     actType = view.findViewById(R.id.actType);
-                    actType.setAdapter(adapterBlockType);
+                    actType.setAdapter(adapterFieldType);
                     actType.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             String selection = (String) parent.getItemAtPosition(position);
-                            blockTypy = position;
+                            fieldTypy = position;
                             Log.println(Log.INFO, TAG_EVENT_CLICK, selection);
                             Log.println(Log.INFO, TAG_EVENT_CLICK, "selection [" + position + "]");
                         }
                     });
 
-                    actCollection = view.findViewById(R.id.actCollection);
+                    actBlock = view.findViewById(R.id.actBlock);
 
-                    getCollectionByOwner(actCollection);
+                    getBlockByOwner(actBlock);
 
                     form.setView(view);
 
@@ -141,7 +139,7 @@ public class BlocksFragment extends Fragment implements Constants {
                             dialog.dismiss();
                             String name = tname.getText().toString();
                             String desc = tdesc.getText().toString();
-                            Boolean isGlobalBlock = isGlobal.isChecked();
+                            String value = tvalue.getText().toString();
 
                             String userUid = preferences.getString(USER_UID, "");
 
@@ -156,28 +154,28 @@ public class BlocksFragment extends Fragment implements Constants {
                                 return;
                             }
 
-                            if (TextUtils.isEmpty(collection)) {
-                                Toast.makeText(getActivity(), "Collection is Empty!", Toast.LENGTH_SHORT).show();
+                            if (TextUtils.isEmpty(block)) {
+                                Toast.makeText(getActivity(), "Block is Empty!", Toast.LENGTH_SHORT).show();
                                 return;
                             }
 
-                            if (blockTypy == null) {
-                                Toast.makeText(getActivity(), "Block Type is Empty!", Toast.LENGTH_SHORT).show();
+                            if (fieldTypy == null) {
+                                Toast.makeText(getActivity(), "Field Type is Empty!", Toast.LENGTH_SHORT).show();
                                 return;
                             }
 
-                            database.child(ENTITY_BLOCK)
-                                    .push()//FIXME collection;
-                                    .setValue(new BlockEntity(blockTypy, isGlobalBlock ? "1" : "0", name, desc, collection, userUid))
+                            database.child(ENTITY_FIELD)
+                                    .push()//FIXME block;
+                                    .setValue(new FieldEntity(fieldTypy, name, desc, value, block, userUid))
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void unused) {
-                                            Toast.makeText(view.getContext(), "Saved Block!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(view.getContext(), "Saved Field!", Toast.LENGTH_SHORT).show();
                                         }
                                     }).addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull @NotNull Exception e) {
-                                    Toast.makeText(view.getContext(), "Block could not be saved!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(view.getContext(), "Field could not be saved!", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -196,44 +194,43 @@ public class BlocksFragment extends Fragment implements Constants {
                 } catch (Exception e) {
                     Log.e("Exception", e.getMessage());
                 }
-                Log.i("BlockFragment", "start onClick!");
+                Log.i("FieldFragment", "start onClick!");
             }
         });
 
-        rvBlocks = binding.rvBlocks;
-        rvBlocks.setAdapter(new BlockAdapter(new ArrayList<>(), getActivity()));
+        rvFields = binding.rvFields;
+        rvFields.setAdapter(new FieldAdapter(new ArrayList<>(), getActivity()));
 
         RecyclerView.LayoutManager mLayout = new LinearLayoutManager(getActivity());
 
-        rvBlocks.setLayoutManager(mLayout);
-        rvBlocks.setItemAnimator(new DefaultItemAnimator());
+        rvFields.setLayoutManager(mLayout);
+        rvFields.setItemAnimator(new DefaultItemAnimator());
 
         loadData();
-
 
         return root;
     }
 
 
     /**
-     * find All blocks by owner
+     * find All fields by owner
      */
     private void loadData() {
         String userUid = preferences.getString(USER_UID, "");
-        database.child(ENTITY_BLOCK)
+        database.child(ENTITY_FIELD)
                 .orderByChild(BLOCK_FIELD_OWNER)
                 .equalTo(userUid)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                        listBlock = new ArrayList<>();
+                        listField = new ArrayList<>();
                         for (DataSnapshot item : snapshot.getChildren()) {
-                            BlockEntity entity = item.getValue(BlockEntity.class);
+                            FieldEntity entity = item.getValue(FieldEntity.class);
                             entity.setKey(item.getKey());
-                            listBlock.add(entity);
+                            listField.add(entity);
                         }
-                        adapter = new BlockAdapter(listBlock, getActivity());
-                        rvBlocks.setAdapter(adapter);
+                        adapter = new FieldAdapter(listField, getActivity());
+                        rvFields.setAdapter(adapter);
                     }
 
                     @Override
@@ -245,46 +242,46 @@ public class BlocksFragment extends Fragment implements Constants {
 
 
     /**
-     * find All collections by owner
+     * find All Blocks by owner
      */
-    private void getCollectionByOwner(AutoCompleteTextView actCollection) {
+    private void getBlockByOwner(AutoCompleteTextView actBlock) {
         try {
             String userUid = preferences.getString(USER_UID, "");
-            database.child(ENTITY_COLLECTION)
-                    .orderByChild(COLLECTION_FIELD_OWNER)
+            database.child(ENTITY_BLOCK)
+                    .orderByChild(BLOCK_FIELD_OWNER)
                     .equalTo(userUid)
                     .addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                            listCollection = new ArrayList<>();
-                            collectionsName = new ArrayList<String>();
+                            listBlock = new ArrayList<>();
+                            blocksName = new ArrayList<String>();
                             for (DataSnapshot item : snapshot.getChildren()) {
-                                CollectionEntity entity = item.getValue(CollectionEntity.class);
+                                BlockEntity entity = item.getValue(BlockEntity.class);
                                 entity.setKey(item.getKey());
-                                listCollection.add(entity);
-                                collectionsName.add(entity.getName());
+                                listBlock.add(entity);
+                                blocksName.add(entity.getName());
                                 Log.println(Log.INFO, TAG_LIST, item.toString());
                             }
 
-                            if (listCollection != null && listCollection.size() >= 1) {
-                                ArrayAdapter adapterCollection = new ArrayAdapter(
+                            if (listBlock != null && listBlock.size() >= 1) {
+                                ArrayAdapter adapterBlock = new ArrayAdapter(
                                         getContext(),
-                                        R.layout.block_list,
-                                        collectionsName
+                                        R.layout.field_list,
+                                        blocksName
                                 );
-                                actCollection.setAdapter(adapterCollection);
-                                actCollection.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                actBlock.setAdapter(adapterBlock);
+                                actBlock.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                     @Override
                                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                         String selection = (String) parent.getItemAtPosition(position);
                                         Log.println(Log.INFO, TAG_EVENT_CLICK, selection);
-                                        Log.println(Log.INFO, TAG_EVENT_CLICK, listCollection.get(position).toString());
+                                        Log.println(Log.INFO, TAG_EVENT_CLICK, listBlock.get(position).toString());
 
-                                        collection = listCollection.get(position).getKey();
+                                        block = listBlock.get(position).getKey();
                                     }
                                 });
                             } else {
-                                Toast.makeText(getContext(), "Not Found Collections", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Not Found Blocks", Toast.LENGTH_SHORT).show();
                             }
                         }
 
@@ -296,7 +293,6 @@ public class BlocksFragment extends Fragment implements Constants {
         } catch (Exception e) {
             Log.println(Log.ERROR, TAG_EXCEPTION, e.getMessage());
         }
-        loadData();
     }
 
     @Override
@@ -304,4 +300,5 @@ public class BlocksFragment extends Fragment implements Constants {
         super.onDestroyView();
         binding = null;
     }
+
 }

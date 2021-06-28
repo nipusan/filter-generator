@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,13 +20,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.nipusan.app.filtergenerator.R;
-import com.nipusan.app.filtergenerator.entity.BlockEntity;
 import com.nipusan.app.filtergenerator.entity.FieldEntity;
 import com.nipusan.app.filtergenerator.utils.Constants;
 
@@ -35,14 +30,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class BlockAdapter extends RecyclerView.Adapter<BlockAdapter.MyViewHolder> implements Constants {
+public class FieldAdapter extends RecyclerView.Adapter<FieldAdapter.MyViewHolder> implements Constants {
 
-    private List<BlockEntity> cList;
+    private List<FieldEntity> cList;
     private Activity activity;
 
     DatabaseReference database = FirebaseDatabase.getInstance().getReference();
 
-    public BlockAdapter(List<BlockEntity> cList, Activity activity) {
+    public FieldAdapter(List<FieldEntity> cList, Activity activity) {
         this.cList = cList;
         this.activity = activity;
     }
@@ -52,27 +47,22 @@ public class BlockAdapter extends RecyclerView.Adapter<BlockAdapter.MyViewHolder
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.layout_block_item, parent, false);
+        View view = inflater.inflate(R.layout.layout_field_item, parent, false);
         return new MyViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull MyViewHolder holder, int position) {
-        final BlockEntity entity = cList.get(position);
+        final FieldEntity entity = cList.get(position);
         holder.tvName.setText(entity.getName());
         holder.tvDescription.setText(entity.getDescription());
         String type = "Not Found";
         try {
             type = ARRAY_LIST_BLOCK_TYPE[entity.getType()];
-        } catch (Exception e) {
+        } catch (Exception e){
             Log.println(Log.ERROR, TAG_EXCEPTION, e.getMessage());
         }
-        holder.tvTypeBlock.setText(type);
-        if (!entity.getOverallProject().isEmpty() && entity.getOverallProject().equalsIgnoreCase("1")) {
-            holder.global.setVisibility(View.VISIBLE);
-        } else {
-            holder.global.setVisibility(View.GONE);
-        }
+        holder.tvTypeField.setText(type);
         holder.btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,42 +70,17 @@ public class BlockAdapter extends RecyclerView.Adapter<BlockAdapter.MyViewHolder
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
-
-                        database.child(ENTITY_FIELD)
-                                .orderByChild(FIELD_FIELD_ID_BLOCK)
-                                .equalTo(entity.getKey())
-                                .addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                                        boolean exist = false;
-                                        for (DataSnapshot item : snapshot.getChildren()) {
-                                            FieldEntity entity = item.getValue(FieldEntity.class);
-                                            entity.setKey(item.getKey());
-                                            exist = true;
-                                            break;
-                                        }
-                                        if (!exist) {
-                                            database.child(ENTITY_BLOCK).child(entity.getKey()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                @Override
-                                                public void onSuccess(Void unused) {
-                                                    Toast.makeText(activity, "Deleted collection!", Toast.LENGTH_SHORT).show();
-                                                }
-                                            }).addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull @NotNull Exception e) {
-                                                    Toast.makeText(activity, "Block could not be deleted!", Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                        } else {
-                                            Toast.makeText(activity, "There are references to this object in the fields entity, remove the relationships before attempting to remove this block", Toast.LENGTH_LONG).show();
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
-                                        Toast.makeText(activity, "Error: on cancelled!", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                        database.child(ENTITY_FIELD).child(entity.getKey()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                Toast.makeText(activity, "Deleted collection!", Toast.LENGTH_SHORT).show();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull @NotNull Exception e) {
+                                Toast.makeText(activity, "Field could not be deleted!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
@@ -127,38 +92,37 @@ public class BlockAdapter extends RecyclerView.Adapter<BlockAdapter.MyViewHolder
             }
         });
 
-        holder.cardBlock.setOnLongClickListener(new View.OnLongClickListener() {
+        holder.cardField.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
 
-                TextView tname, tdesc;
-                AutoCompleteTextView stype, scollection;
-                CheckBox global;
+                TextView tname, tdesc, tvalue;
+                AutoCompleteTextView stype, sblock;
                 Button btnAction;
                 LayoutInflater inflater = LayoutInflater.from(activity);
-                final View view = inflater.inflate(R.layout.activity_form_block, null);
+                final View view = inflater.inflate(R.layout.activity_form_field, null);
 
                 AlertDialog.Builder form = new AlertDialog.Builder(activity);
                 form.setTitle("Update");
-                form.setMessage("The type, collection and global block fields cannot be edited after being created");
+                form.setMessage("The type and Block fields cannot be edited after being created");
 
                 stype = view.findViewById(R.id.actType);
-                scollection = view.findViewById(R.id.actCollection);
+                sblock = view.findViewById(R.id.actBlock);
                 tname = view.findViewById(R.id.etName);
                 tdesc = view.findViewById(R.id.etDesc);
-                global = view.findViewById(R.id.cbGlobalBlock);
+                tvalue = view.findViewById(R.id.etValue);
 
                 btnAction = view.findViewById(R.id.btnSave);
                 tname.setText(entity.getName());
                 tdesc.setText(entity.getDescription());
+                tvalue.setText(entity.getValue());
 
                 /**
                  * TODO: these fields will not be editable for now
                  */
                 btnAction.setVisibility(View.INVISIBLE);
-                global.setVisibility(View.INVISIBLE);
                 stype.setVisibility(View.INVISIBLE);
-                scollection.setVisibility(View.INVISIBLE);
+                sblock.setVisibility(View.INVISIBLE);
 
 
                 form.setView(view);
@@ -171,6 +135,7 @@ public class BlockAdapter extends RecyclerView.Adapter<BlockAdapter.MyViewHolder
                         dialog.dismiss();
                         String name = tname.getText().toString();
                         String desc = tdesc.getText().toString();
+                        String value = tvalue.getText().toString();
 
                         if (TextUtils.isEmpty(name)) {
                             Toast.makeText(activity, "Name is Empty!", Toast.LENGTH_SHORT).show();
@@ -182,18 +147,18 @@ public class BlockAdapter extends RecyclerView.Adapter<BlockAdapter.MyViewHolder
                             return;
                         }
 
-                        database.child(ENTITY_BLOCK)
+                        database.child(ENTITY_FIELD)
                                 .child(entity.getKey())
-                                .setValue(new BlockEntity(entity.getType(), entity.getOverallProject(), name, desc, entity.getIdProject(), entity.getOwner()))
+                                .setValue(new FieldEntity(entity.getType(), name, desc, entity.getIdBlock(), value, entity.getOwner()))
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void unused) {
-                                        Toast.makeText(view.getContext(), "Updated Block!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(view.getContext(), "Updated Field!", Toast.LENGTH_SHORT).show();
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull @NotNull Exception e) {
-                                Toast.makeText(view.getContext(), "Block could not be updated!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(view.getContext(), "Field could not be updated!", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -222,26 +187,18 @@ public class BlockAdapter extends RecyclerView.Adapter<BlockAdapter.MyViewHolder
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvDescription, tvTypeBlock;
-        //Spinner stype, scollection;
-        ImageView global;
-
-        CardView cardBlock;
+        TextView tvName, tvDescription, tvTypeField;
+        CardView cardField;
         ImageView btnDelete;
 
 
         public MyViewHolder(@NonNull @NotNull View itemView) {
             super(itemView);
-            tvName = itemView.findViewById(R.id.cardNameBlock);
-            tvDescription = itemView.findViewById(R.id.cardDescBlock);
-            tvTypeBlock = itemView.findViewById(R.id.cardTypeBlock);
-            global = itemView.findViewById(R.id.isGlobal);
-
-            //stype = itemView.findViewById(R.id.spBlockType);
-            //stype = itemView.findViewById(R.id.spCollection);
-
-            cardBlock = itemView.findViewById(R.id.cardBlock);
-            btnDelete = itemView.findViewById(R.id.btnDeleteBlock);
+            tvName = itemView.findViewById(R.id.cardNameField);
+            tvDescription = itemView.findViewById(R.id.cardDescField);
+            tvTypeField = itemView.findViewById(R.id.cardTypeField);
+            cardField = itemView.findViewById(R.id.cardField);
+            btnDelete = itemView.findViewById(R.id.btnDeleteField);
         }
     }
 }

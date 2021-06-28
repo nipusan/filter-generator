@@ -3,9 +3,7 @@ package com.nipusan.app.filtergenerator.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
-@ToString
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,5 +25,8 @@ public class CollectionEntity {
         this.owner = owner;
     }
 
-
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }

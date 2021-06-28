@@ -17,5 +17,10 @@
             android:id="@+id/nav_blocks"
             android:icon="@drawable/ic_baseline_block_24"
             android:title="@string/menu_blocks" />
+        <item
+            android:visible="true"
+            android:id="@+id/nav_fields"
+            android:icon="@drawable/ic_baseline_text_fields_24"
+            android:title="@string/menu_fields" />
     </group>
 </menu>

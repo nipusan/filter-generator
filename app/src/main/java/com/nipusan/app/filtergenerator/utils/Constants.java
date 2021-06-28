@@ -4,9 +4,11 @@ public interface Constants {
 
     final static String ENTITY_COLLECTION = "COLLECTION";
     final static String ENTITY_BLOCK = "BLOCK";
+    final static String ENTITY_FIELD = "FIELD";
     final static String COLLECTION_FIELD_OWNER = "owner";
     final static String BLOCK_FIELD_OWNER = "owner";
     final static String BLOCK_FIELD_ID_PROJECT = "idProject";
+    final static String FIELD_FIELD_ID_BLOCK = "idBlock";
 
     final static String USER_UID = "Uid";
 

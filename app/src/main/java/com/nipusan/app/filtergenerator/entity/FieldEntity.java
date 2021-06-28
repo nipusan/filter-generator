@@ -7,22 +7,22 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class BlockEntity {
+public class FieldEntity {
 
     private String key;
     private Integer type;
-    private String overallProject;
     private String name;
     private String description;
-    private String idProject;
+    private String value;
+    private String idBlock;
     private String owner;
 
-    public BlockEntity(Integer type, String overallProject, String name, String description, String idProject, String owner) {
+    public FieldEntity(Integer type, String name, String description, String value, String idBlock, String owner) {
         this.type = type;
-        this.overallProject = overallProject;
         this.name = name;
         this.description = description;
-        this.idProject = idProject;
+        this.value = value;
+        this.idBlock = idBlock;
         this.owner = owner;
     }
 

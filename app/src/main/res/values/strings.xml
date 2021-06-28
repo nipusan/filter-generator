@@ -11,17 +11,18 @@
     <string name="menu_home">Home</string>
     <string name="menu_collections">Collections</string>
     <string name="menu_blocks">Blocks</string>
+    <string name="menu_fields">Fields</string>
 
     <string name="menu_slideshow">Slideshow</string>
     <string name="layout_login">Login</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    
+
     <string-array name="bock_type">
         <item>String</item>
         <item>Number</item>
         <item>Boolean</item>
         <item>List</item>
     </string-array>
-    
+
 </resources>
