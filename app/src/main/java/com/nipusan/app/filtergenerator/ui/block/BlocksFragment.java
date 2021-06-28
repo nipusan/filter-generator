@@ -131,7 +131,7 @@ public class BlocksFragment extends Fragment implements Constants {
                     actCollection = view.findViewById(R.id.actCollection);
 
                     getCollectionByOwner(actCollection);
-                    
+
                     form.setView(view);
 
                     form.setPositiveButton("Saved", new DialogInterface.OnClickListener() {

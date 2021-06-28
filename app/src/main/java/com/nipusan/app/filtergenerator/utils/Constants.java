@@ -6,6 +6,7 @@ public interface Constants {
     final static String ENTITY_BLOCK = "BLOCK";
     final static String COLLECTION_FIELD_OWNER = "owner";
     final static String BLOCK_FIELD_OWNER = "owner";
+    final static String BLOCK_FIELD_ID_PROJECT = "idProject";
 
     final static String USER_UID = "Uid";
 

@@ -31,6 +31,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.nipusan.app.filtergenerator.R;
 import com.nipusan.app.filtergenerator.adapter.CollectionAdapter;
 import com.nipusan.app.filtergenerator.databinding.FragmentCollectionBinding;
+import com.nipusan.app.filtergenerator.entity.BlockEntity;
 import com.nipusan.app.filtergenerator.entity.CollectionEntity;
 import com.nipusan.app.filtergenerator.utils.Constants;
 
@@ -190,6 +191,35 @@ public class CollectionFragment extends Fragment implements Constants {
 
                     }
                 });
+    }
+
+    /**
+     * find All blocks by owner
+     */
+    private Boolean existBlocksByCollection(String idProject) {
+        //  String userUid = preferences.getString(USER_UID, "");
+        final Boolean[] ret = {false};
+        database.child(ENTITY_BLOCK)
+                .orderByChild(BLOCK_FIELD_ID_PROJECT)
+                .equalTo(idProject)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+
+                        for (DataSnapshot item : snapshot.getChildren()) {
+                            BlockEntity entity = item.getValue(BlockEntity.class);
+                            entity.setKey(item.getKey());
+                            ret[0] = true;
+                            break;
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                    }
+                });
+        return ret[0];
     }
 
 

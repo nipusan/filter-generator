@@ -18,9 +18,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.nipusan.app.filtergenerator.R;
+import com.nipusan.app.filtergenerator.entity.BlockEntity;
 import com.nipusan.app.filtergenerator.entity.CollectionEntity;
 import com.nipusan.app.filtergenerator.utils.Constants;
 
@@ -61,17 +65,43 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
-                        database.child(ENTITY_COLLECTION).child(entity.getKey()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                Toast.makeText(activity, "Deleted collection!", Toast.LENGTH_SHORT).show();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull @NotNull Exception e) {
-                                Toast.makeText(activity, "Collection could not be deleted!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+
+                        database.child(ENTITY_BLOCK)
+                                .orderByChild(BLOCK_FIELD_ID_PROJECT)
+                                .equalTo(entity.getKey())
+                                .addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                                        boolean exist = false;
+                                        for (DataSnapshot item : snapshot.getChildren()) {
+                                            BlockEntity entity = item.getValue(BlockEntity.class);
+                                            entity.setKey(item.getKey());
+                                            exist = true;
+                                            break;
+                                        }
+
+                                        if (!exist) {
+                                            database.child(ENTITY_COLLECTION).child(entity.getKey()).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void unused) {
+                                                    Toast.makeText(activity, "Deleted collection!", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }).addOnFailureListener(new OnFailureListener() {
+                                                @Override
+                                                public void onFailure(@NonNull @NotNull Exception e) {
+                                                    Toast.makeText(activity, "Collection could not be deleted!", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                        } else {
+                                            Toast.makeText(activity, "There are references to this object in the blocks entity, remove the relationships before attempting to remove this collection", Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
+                                        Toast.makeText(activity, "Error: on cancelled!", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
