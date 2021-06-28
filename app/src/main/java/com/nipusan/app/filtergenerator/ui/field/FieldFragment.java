@@ -265,7 +265,7 @@ public class FieldFragment extends Fragment implements Constants {
 
                             if (listBlock != null && listBlock.size() >= 1) {
                                 ArrayAdapter adapterBlock = new ArrayAdapter(
-                                        getContext(),
+                                        getActivity(),
                                         R.layout.field_list,
                                         blocksName
                                 );

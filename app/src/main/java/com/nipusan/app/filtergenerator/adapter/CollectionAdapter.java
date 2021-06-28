@@ -197,6 +197,7 @@ public class CollectionAdapter extends RecyclerView.Adapter<CollectionAdapter.My
                     preferences = activity.getSharedPreferences("MyPref", Context.MODE_PRIVATE);
                     preferences.edit().putString(COLLECTION_UID, entity.getKey()).apply();
                     preferences.edit().putString(COLLECTION_NAME, entity.getName()).apply();
+                    Toast.makeText(activity, "Active Collection", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     Log.e(TAG_EXCEPTION, e.getMessage());
                 }

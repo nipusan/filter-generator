@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -42,6 +43,7 @@ public class HomeFragment extends Fragment implements Constants {
     private FieldEntity tempField;
 
     private TextView collectionName, infoFields;
+    private LinearLayout llActHomeBlock, llActHomeField;
     private AutoCompleteTextView actBlock, actField;
 
     BlockAdapter adapter;
@@ -58,6 +60,8 @@ public class HomeFragment extends Fragment implements Constants {
         actBlock = binding.actHomeBlock;
         actField = binding.actHomeField;
         infoFields = binding.tvInfoFields;
+        llActHomeBlock = binding.llActHomeBlock;
+        llActHomeField = binding.llActHomeField;
 
         try {
             preferences = getContext().getSharedPreferences("MyPref", Context.MODE_PRIVATE);
@@ -68,13 +72,13 @@ public class HomeFragment extends Fragment implements Constants {
             tempCollection.setName(name);
             if (!name.isEmpty()) {
                 collectionName.setText("Active collection: " + name);
-                actBlock.setVisibility(View.VISIBLE);
-                actField.setVisibility(View.VISIBLE);
+                llActHomeField.setVisibility(View.VISIBLE);
+                llActHomeBlock.setVisibility(View.VISIBLE);
                 loadBlock();
             } else {
                 collectionName.setText("No Active collection!");
-                actBlock.setVisibility(View.GONE);
-                actField.setVisibility(View.GONE);
+                llActHomeField.setVisibility(View.GONE);
+                llActHomeBlock.setVisibility(View.GONE);
             }
 
 
@@ -90,41 +94,52 @@ public class HomeFragment extends Fragment implements Constants {
      * find All blocks by Collection
      */
     private void loadBlock() {
-        Log.println(Log.INFO, TAG_EVENT_CLICK, tempCollection.toString());
-        database.child(ENTITY_BLOCK)
-                .orderByChild(BLOCK_FIELD_ID_PROJECT)
-                .equalTo(tempCollection.getKey())
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                        listBlock = new ArrayList<>();
-                        for (DataSnapshot item : snapshot.getChildren()) {
-                            BlockEntity entity = item.getValue(BlockEntity.class);
-                            entity.setKey(item.getKey());
-                            listBlock.add(entity);
-                        }
-                        Log.println(Log.INFO, TAG_LIST, "list Bock: " + listBlock.size());
-                        ArrayAdapter adapterBlockType = new ArrayAdapter(
-                                getContext(),
-                                R.layout.block_list,
-                                listBlock
-                        );
-                        actBlock.setAdapter(adapterBlockType);
-                        actBlock.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                Log.println(Log.INFO, TAG_EVENT_CLICK, listBlock.get(position).toString());
-                                tempBlock = listBlock.get(position);
-                                loadField();
+        try {
+            Log.println(Log.INFO, TAG_EVENT_CLICK, tempCollection.toString());
+            database.child(ENTITY_BLOCK)
+                    .orderByChild(BLOCK_FIELD_ID_PROJECT)
+                    .equalTo(tempCollection.getKey())
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                            listBlock = new ArrayList<>();
+                            for (DataSnapshot item : snapshot.getChildren()) {
+                                BlockEntity entity = item.getValue(BlockEntity.class);
+                                entity.setKey(item.getKey());
+                                listBlock.add(entity);
                             }
-                        });
-                    }
+                            Log.println(Log.INFO, TAG_LIST, "list Bock: " + listBlock.size());
 
-                    @Override
-                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
+                            if (listBlock.size() <= 0) {
+                                llActHomeBlock.setVisibility(View.GONE);
+                                llActHomeField.setVisibility(View.GONE);
+                            }
 
-                    }
-                });
+                            ArrayAdapter adapterBlockType = new ArrayAdapter(
+                                    getContext(),
+                                    R.layout.block_list,
+                                    listBlock
+                            );
+
+                            actBlock.setAdapter(adapterBlockType);
+                            actBlock.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    Log.println(Log.INFO, TAG_EVENT_CLICK, listBlock.get(position).toString());
+                                    tempBlock = listBlock.get(position);
+                                    loadField();
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull @NotNull DatabaseError error) {
+
+                        }
+                    });
+        } catch (Exception e) {
+            Log.e(TAG_EXCEPTION, e.getMessage());
+        }
     }
 
     /**
@@ -149,11 +164,17 @@ public class HomeFragment extends Fragment implements Constants {
                             Log.println(Log.INFO, TAG_LIST, entity.toString());
                         }
                         Log.println(Log.INFO, TAG_LIST, "list Field: " + listField.size());
+
+                        if (listField.size() <= 0) {
+                            llActHomeField.setVisibility(View.GONE);
+                        }
+
                         ArrayAdapter adapterFieldType = new ArrayAdapter(
                                 getContext(),
                                 R.layout.field_list,
                                 listField
                         );
+
                         actField.setAdapter(adapterFieldType);
                         infoFields.setText(textInfo);
                         actField.setOnItemClickListener(new AdapterView.OnItemClickListener() {
