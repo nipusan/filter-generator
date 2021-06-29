@@ -203,6 +203,8 @@ public class MainActivity extends AppCompatActivity implements Constants {
 
             @Override
             public void onComplete(@NonNull @NotNull Task<Void> task) {
+                preferences.edit().putStringSet(COLLECTION_UID, null).apply();
+                preferences.edit().putStringSet(COLLECTION_NAME, null).apply();
                 Toast.makeText(MainActivity.this, "The session has been closed!", Toast.LENGTH_LONG).show();
                 startActivity(new Intent(MainActivity.this, MainActivity.class));
                 finish();
